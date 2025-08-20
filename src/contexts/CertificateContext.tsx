@@ -34,6 +34,9 @@ interface CertificateContextType {
 
 const CertificateContext = createContext<CertificateContextType | undefined>(undefined);
 
+
+
+
 export const useCertificates = () => {
   const context = useContext(CertificateContext);
   if (!context) {

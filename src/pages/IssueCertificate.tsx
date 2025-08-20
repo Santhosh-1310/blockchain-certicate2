@@ -13,7 +13,7 @@ const IssueCertificate: React.FC = () => {
   const [formData, setFormData] = useState({
     studentName: '',
     studentEmail: '',
-  institutionName: user?.institutionName || '',
+    institutionName: user?.institutionName || '',
     courseName: '',
     grade: '',
     completionDate: '',
@@ -38,12 +38,35 @@ const IssueCertificate: React.FC = () => {
         verificationStatus: 'verified' as const
       };
 
-  await addCertificate(certificateData);
-      
-      // Show success message
-      alert('Certificate issued successfully!');
+     const sendEmail = async (to : string,certificateId : string) => {
+        try {
+          const res = await fetch("http://localhost:5000/send-email/certificate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              to,
+              studentName : formData.studentName,
+              courseName : formData.courseName,
+              grade : formData.grade,
+              institutionName : formData.institutionName,
+              issueDate : certificateData.issueDate,
+              completionDate : certificateData.completionDate,
+              certificateId
+            }),
+          });
+          await res.json();
+
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      const id = await addCertificate(certificateData);
+
+      await sendEmail(formData.studentEmail,id)
+      alert('Certificate issued through Mail successfully!');
       navigate('/institution');
-    } catch (err) {
+    } catch  {
       setError('Failed to issue certificate. Please try again.');
     } finally {
       setLoading(false);
