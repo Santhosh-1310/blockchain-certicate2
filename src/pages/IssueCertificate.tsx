@@ -4,12 +4,62 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCertificates } from '../contexts/CertificateContext';
 import Navbar from '../components/Navbar';
 import { Award, Upload, Calendar, User, BookOpen } from 'lucide-react';
+import { emailService } from '../utils/emailService';
+
+
+const sendEmail = async (to : string,certificateId : string, formData, certificateData) => {
+  try {
+    const res = await fetch("http://localhost:5000/send-email/certificate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to,
+        studentName : formData.studentName,
+        courseName : formData.courseName,
+        grade : formData.grade,
+        institutionName : formData.institutionName,
+        issueDate : certificateData.issueDate,
+        completionDate : certificateData.completionDate,
+        certificateId
+      }),
+    });
+    await res.json();
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+const sendVerifierEmail = async (to : string, verifierName: string, certificateId : string, formData , certificateData) => {
+  try {
+    const res = await fetch("http://localhost:5000/send-email/verifier", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to,
+        verifierName,
+        studentName : formData.studentName,
+        courseName : formData.courseName,
+        institutionName : formData.institutionName,
+        issueDate : certificateData.issueDate,
+        certificateId
+      }),
+    });
+    await res.json();
+
+  } catch (err) {
+    console.error(err);
+  }
+}
 
 const IssueCertificate: React.FC = () => {
   const { user } = useAuth();
   const { addCertificate } = useCertificates();
   const navigate = useNavigate();
-  
+
+
+
+
   const [formData, setFormData] = useState({
     studentName: '',
     studentEmail: '',
@@ -38,33 +88,15 @@ const IssueCertificate: React.FC = () => {
         verificationStatus: 'verified' as const
       };
 
-     const sendEmail = async (to : string,certificateId : string) => {
-        try {
-          const res = await fetch("http://localhost:5000/send-email/certificate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              to,
-              studentName : formData.studentName,
-              courseName : formData.courseName,
-              grade : formData.grade,
-              institutionName : formData.institutionName,
-              issueDate : certificateData.issueDate,
-              completionDate : certificateData.completionDate,
-              certificateId
-            }),
-          });
-          await res.json();
-
-        } catch (err) {
-          console.error(err);
-        }
-      }
-
       const id = await addCertificate(certificateData);
 
-      await sendEmail(formData.studentEmail,id)
-      alert('Certificate issued through Mail successfully!');
+      await sendEmail(formData.studentEmail,id, formData, certificateData)
+      const verifiers = await emailService.getVerifiers();
+      console.log(verifiers);
+      for (const verifier of verifiers) {
+        await sendVerifierEmail(verifier.email, verifier.name, id, formData, certificateData);
+      }
+      alert('Certificate issued successfully and verification requests sent!');
       navigate('/institution');
     } catch  {
       setError('Failed to issue certificate. Please try again.');

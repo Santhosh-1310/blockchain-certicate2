@@ -228,6 +228,65 @@ export const templates = {
         </div>
       </div>
       `
+    },
+    verificationRequest: {
+        subject: 'New Certificate Available for Verification - E-Certify',
+        body: (verifierName,studentName,courseName,institutionName,issueDate,certificateId) => `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+          <h1 style="margin: 0; font-size: 28px;">Verification Request</h1>
+          <p style="margin: 10px 0 0 0; font-size: 16px;">New certificate available for verification</p>
+        </div>
+        
+        <div style="background: white; padding: 30px; border: 1px solid #e0e0e0; border-radius: 0 0 10px 10px;">
+          <h2 style="color: #333; margin-bottom: 20px;">Hello ${verifierName},</h2>
+          
+          <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+            A new academic certificate has been issued and is now available for verification. 
+            Please review the certificate details and verify its authenticity.
+          </p>
+          
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #333; margin-bottom: 15px;">Certificate Details:</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+              <div>
+                <p style="margin: 5px 0;"><strong>Student:</strong> ${studentName}</p>
+                <p style="margin: 5px 0;"><strong>Course:</strong> ${courseName}</p>
+                <p style="margin: 5px 0;"><strong>Institution:</strong> ${institutionName}</p>
+              </div>
+              <div>
+                <p style="margin: 5px 0;"><strong>Issue Date:</strong> ${issueDate}</p>
+                <p style="margin: 5px 0;"><strong>Certificate ID:</strong> ${certificateId}</p>
+                <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #ffc107; font-weight: bold;">Pending Verification</span></p>
+              </div>
+            </div>
+          </div>
+          
+          <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+            Please log into your verifier dashboard to review and verify this certificate. 
+            The verification process helps maintain the integrity of academic credentials on our platform.
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${VERIFICATION}" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; display: inline-block; font-weight: bold;">
+              Verify Certificate
+            </a>
+          </div>
+          
+          <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="color: #856404; margin: 0; font-size: 14px;">
+              <strong>Note:</strong> This verification request is automatically generated when new certificates are issued. 
+              Please verify the certificate within 48 hours to maintain platform efficiency.
+            </p>
+          </div>
+          
+          <p style="color: #666; line-height: 1.6;">
+            Best regards,<br>
+            The E-Certify Team
+          </p>
+        </div>
+      </div>
+    `
     }
 }
 

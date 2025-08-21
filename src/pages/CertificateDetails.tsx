@@ -7,11 +7,11 @@ import {
   Download, 
   Share2, 
   CheckCircle, 
-  Calendar, 
+
   Building, 
   User, 
   Award, 
-  FileText,
+
   QrCode,
   Shield,
   ExternalLink

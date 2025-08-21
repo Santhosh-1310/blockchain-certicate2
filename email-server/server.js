@@ -54,15 +54,17 @@ app.post("/send-email/certificate", async (req, res) => {
     }
 });
 
-app.post("/send-email/certificateVerify", async (req, res) => {
-    const { to,studentName,courseName,grade,institutionName,issueDate,completionDate,certificateId} = req.body;
+
+
+app.post("/send-email/verifier", async (req, res) => {
+    const { to,verifierName,studentName,courseName,institutionName,issueDate,certificateId} = req.body;
 
     try {
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to,
-            subject : templates.certificateTemplate.subject,
-            html: templates.certificateTemplate.body(studentName,courseName,grade,institutionName,issueDate,completionDate,certificateId),
+            subject : templates.verificationRequest.subject,
+            html: templates.verificationRequest.body(verifierName,studentName,courseName,institutionName,issueDate,certificateId),
         });
         res.status(200).json({ message: "Email sent successfully!" });
     } catch (err) {
