@@ -5,9 +5,10 @@ import { useCertificates } from '../contexts/CertificateContext';
 import Navbar from '../components/Navbar';
 import { Award, Upload, Calendar, User, BookOpen } from 'lucide-react';
 import { emailService } from '../utils/emailService';
+import { requestAccounts, shortenAddress, getChainId, isEthereumAvailable, generateCertificateHash } from '../utils/blockchain';
 
 
-const sendEmail = async (to : string,certificateId : string, formData, certificateData) => {
+const sendEmail = async (to : string,certificateId : string, formData : any, certificateData : any) => {
   try {
     const res = await fetch("http://localhost:5000/send-email/certificate", {
       method: "POST",
@@ -30,7 +31,7 @@ const sendEmail = async (to : string,certificateId : string, formData, certifica
   }
 }
 
-const sendVerifierEmail = async (to : string, verifierName: string, certificateId : string, formData , certificateData) => {
+const sendVerifierEmail = async (to : string, verifierName: string, certificateId : string, formData : any , certificateData : any) => {
   try {
     const res = await fetch("http://localhost:5000/send-email/verifier", {
       method: "POST",
@@ -57,7 +58,8 @@ const IssueCertificate: React.FC = () => {
   const { addCertificate } = useCertificates();
   const navigate = useNavigate();
 
-
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [chainId, setChainId] = useState<string | null>(null);
 
 
   const [formData, setFormData] = useState({
@@ -80,26 +82,53 @@ const IssueCertificate: React.FC = () => {
     setLoading(true);
 
     try {
+      // Check if ethereum is available and wallet is connected
+      if (!isEthereumAvailable()) {
+        throw new Error('Ethereum wallet not found. Please install MetaMask.');
+      }
+
+      if (!walletAddress) {
+        throw new Error('Please connect your wallet first.');
+      }
+
       const certificateData = {
         ...formData,
-  institutionName: formData.institutionName || user?.institutionName || 'Unknown Institution',
+        institutionName: formData.institutionName || user?.institutionName || 'Unknown Institution',
         institutionId: user?.id || '',
         issueDate: new Date().toISOString().split('T')[0],
-        verificationStatus: 'verified' as const
+        verificationStatus: 'pending' as const
       };
 
-      const id = await addCertificate(certificateData);
+      // Generate hash from certificate data
+      const certHash = await generateCertificateHash({
+        recipient: walletAddress,
+        studentName: formData.studentName,
+        studentEmail: formData.studentEmail,
+        institutionName: certificateData.institutionName,
+        courseName: formData.courseName,
+        grade: formData.grade,
+        completionDate: formData.completionDate,
+        issueDate: certificateData.issueDate,
+        timestamp: new Date().getTime()
+      });
 
-      await sendEmail(formData.studentEmail,id, formData, certificateData)
+      // Store certificate with the hash
+      const id = await addCertificate({
+        ...certificateData,
+        blockchainHash: certHash
+      });
+
+      // Send notifications
+      await sendEmail(formData.studentEmail, id, formData, certificateData);
       const verifiers = await emailService.getVerifiers();
-      console.log(verifiers);
       for (const verifier of verifiers) {
         await sendVerifierEmail(verifier.email, verifier.name, id, formData, certificateData);
       }
-      alert('Certificate issued successfully and verification requests sent!');
+
+      alert('Certificate issued successfully on blockchain and verification requests sent!');
       navigate('/institution');
-    } catch  {
-      setError('Failed to issue certificate. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to issue certificate. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -111,6 +140,19 @@ const IssueCertificate: React.FC = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+   const handleConnectWallet = async () => {
+    if (!isEthereumAvailable()) {
+      alert('MetaMask not found. Please install MetaMask to continue.');
+      return;
+    }
+    const accounts = await requestAccounts();
+    if (accounts && accounts.length > 0) {
+      setWalletAddress(accounts[0]);
+      const id = await getChainId();
+      setChainId(id);
+    }
   };
 
   return (
@@ -153,8 +195,30 @@ const IssueCertificate: React.FC = () => {
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Issue New Certificate</h1>
-          <p className="mt-2 text-gray-600">Create a new blockchain-secured certificate for your student.</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Issue New Certificate</h1>
+              <p className="mt-2 text-gray-600">Create a new blockchain-secured certificate for your student.</p>
+            </div>
+            <button
+              onClick={handleConnectWallet}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
+                walletAddress
+                  ? 'bg-green-100 text-green-700 border border-green-300'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            >
+              {walletAddress ? (
+                <>
+                  <span>Connected: {shortenAddress(walletAddress)}</span>
+                </>
+              ) : (
+                <>
+                  <span>Connect Wallet</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-8">
