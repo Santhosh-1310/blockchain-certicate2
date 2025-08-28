@@ -4,24 +4,21 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCertificates } from '../contexts/CertificateContext';
 import Navbar from '../components/Navbar';
 import { 
-  Award, 
-  Users, 
+  Award,
   FileText, 
   Plus, 
   Search,
-  Calendar,
+
   CheckCircle,
   Clock,
   Building,
   TrendingUp,
   BarChart3,
   PieChart,
-  Activity,
-  Download,
+
   Eye,
   ExternalLink,
-  Filter,
-  MoreHorizontal,
+
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
@@ -75,25 +72,25 @@ const InstitutionDashboard: React.FC = () => {
   const topCourses = Object.entries(courseStats)
     .sort(([,a], [,b]) => b - a)
     .slice(0, 5);
+  //
+  // // Recent Activity
+  // const recentCertificates = certificates
+  //   .sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime())
+  //   .slice(0, 5);
+  //
+  // // Generate sample data for cumulative charts
+  // const generateChartData = (baseValue: number, variance: number = 0.3) => {
+  //   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  //   return days.map((day) => ({
+  //     date: day,
+  //     value: Math.max(0, Math.floor(baseValue * (1 + (Math.random() - 0.5) * variance))),
+  //     label: day
+  //   }));
+  // };
 
-  // Recent Activity
-  const recentCertificates = certificates
-    .sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime())
-    .slice(0, 5);
-
-  // Generate sample data for cumulative charts
-  const generateChartData = (baseValue: number, variance: number = 0.3) => {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return days.map((day, index) => ({
-      date: day,
-      value: Math.max(0, Math.floor(baseValue * (1 + (Math.random() - 0.5) * variance))),
-      label: day
-    }));
-  };
-
-  const certificateIssuanceData = generateChartData(8, 0.4);
-  const verificationRateData = generateChartData(12, 0.3);
-  const studentGrowthData = generateChartData(5, 0.5);
+  // const certificateIssuanceData = generateChartData(8, 0.4);
+  // const verificationRateData = generateChartData(12, 0.3);
+  // const studentGrowthData = generateChartData(5, 0.5);
 
   return (
     <div className="min-h-screen gradient-bg-light">

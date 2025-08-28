@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Shield, Eye, EyeOff } from 'lucide-react';
 
+
 const RegisterPage: React.FC = () => {
   const { register, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
@@ -38,6 +39,21 @@ const RegisterPage: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+
+  const sendEmail = async (to : string) => {
+    try {
+      const res = await fetch("http://localhost:5000/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to,name : formData.name, role : formData.role }),
+      });
+       await res.json();
+
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -56,8 +72,10 @@ const RegisterPage: React.FC = () => {
 
     try {
       const success = await register(formData);
+
       if (success) {
         // Navigate to appropriate dashboard based on user role
+        await sendEmail(formData.email);
         switch (formData.role) {
           case 'student':
             navigate('/student');
@@ -74,7 +92,7 @@ const RegisterPage: React.FC = () => {
       } else {
         setError('Registration failed. User with this email already exists.');
       }
-    } catch (err) {
+    } catch  {
       setError('Registration failed. Please try again.');
     } finally {
       setLoading(false);
